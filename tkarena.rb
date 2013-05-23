@@ -29,7 +29,7 @@ class TkArena
     data = nil
     open(name, 'rb') do |f|
       data = f.read()
-      ncolors = 2**(1 + data[10][0] + data[10][1] * 2 + data[10][2] * 4)
+      ncolors = 2**(1 + data[10][0].to_i + data[10][1].to_i * 2 + data[10][2].to_i * 4)
       ncolors.times do |j|
         data[13 + j * 3 + 0], data[13 + j * 3 + 1], data[13 + j * 3 + 2] =
           data[13 + j * 3 + c1], data[13 + j * 3 + c2], data[13 + j * 3 + c3]
