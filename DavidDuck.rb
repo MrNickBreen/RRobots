@@ -6,7 +6,10 @@ class DavidDuck
    
    def initialize
      @NORMAL_TURN = 2
-     @FAST_TURN = 7
+     @FAST_TURN = 9
+     
+     @WALL_PADDING=100
+     
      @SLOW_GUN_TURN = 1
      @NORMAL_GUN_TURN = 5
      @FAST_GUN_TURN = 10 
@@ -23,11 +26,20 @@ class DavidDuck
   def tick events
     setup_bot	
         
+    if(!@near_wall)
+      @turn_speed = rand(1..4)  if time%30 == 0  
+    end        
+        
   	detect_injury		  	
 
   	detect_walls
   	
     detect_enemy
+    
+    if @near_wall
+       say(@near_wall.to_s)
+       turn_speed =  @FAST_TURN
+    end
         
     implement_update        
     
@@ -40,10 +52,7 @@ class DavidDuck
     turn_gun 20 if time < 3
    end
    
-   def detect_win
-     
-   end
-   
+
    def detect_enemy
     if (! events['robot_scanned'].empty?)
       say('Pew!')
@@ -57,41 +66,37 @@ class DavidDuck
       @gun_turn_speed = -@turn_speed-5  
     elsif (time-@found_enemy>3 && time-@found_enemy<20 )
       @gun_turn_speed = @SLOW_GUN_TURN
-    elsif (time-@found_enemy>30 )
+    elsif (time-@found_enemy>20 )
       say(['no enemy ',time].join)
       @gun_turn_speed = @FAST_GUN_TURN
-      if(!@near_wall)
-        @turn_speed = 0 
-        @turn_speed = rand(1..4)  unless time%5 == 0  
-      end
     end 
    end
    
    def detect_injury   
     @last_hit = time unless events['got_hit'].empty? 
-    if @last_hit && time - @last_hit < 5
+    if @last_hit && time - @last_hit < 4
       say('hit')
-      @turn_speed = @FAST_TURN-2      
-    elsif @last_hit && (time - @last_hit < 20)
+      @turn_speed = @FAST_TURN      
+    elsif @last_hit && (time - @last_hit < 10)
       say('not hit')
       @turn_speed = rand(1...@NORMAL_TURN)      
     end    
    end 
 
    def detect_walls
-    if x<=85
+    if x<=@WALL_PADDING
       turn_speed =  @FAST_TURN
       say('left edge')
       @near_wall=true;
-    elsif x>=(battlefield_width-85)
+    elsif x>=(battlefield_width-@WALL_PADDING)
       turn_speed =  @FAST_TURN 
       say('right edge')
           @near_wall=true;
-    elsif y>= (battlefield_height-85)
+    elsif y>= (battlefield_height-@WALL_PADDING)
       turn_speed =  @FAST_TURN
       say('bottom edge')
           @near_wall=true;
-    elsif y<= 150 
+    elsif y<= @WALL_PADDING 
       turn_speed =  @FAST_TURN
       say('top edge')
       @near_wall=true;
@@ -102,8 +107,7 @@ class DavidDuck
    
           
    def implement_update
-     say(@turn_speed.to_s)
-      accelerate(@my_accel)
+      accelerate(1) #@my_accel)
       turn @turn_speed
       turn_gun @gun_turn_speed     
    end
