@@ -6,7 +6,7 @@ class DavidDuck
    
    def initialize
      @NORMAL_TURN = 2
-     @FAST_TURN = 6
+     @FAST_TURN = 7
      @SLOW_GUN_TURN = 1
      @NORMAL_GUN_TURN = 5
      @FAST_GUN_TURN = 10 
@@ -28,8 +28,9 @@ class DavidDuck
   	detect_walls
   	
     detect_enemy
+        
+    implement_update        
     
-    implement_update    
   end
     
     
@@ -39,9 +40,13 @@ class DavidDuck
     turn_gun 20 if time < 3
    end
    
+   def detect_win
+     
+   end
+   
    def detect_enemy
     if (! events['robot_scanned'].empty?)
-      say('found enemy!')
+      say('Pew!')
       fire 3 
       @gun_turn_speed = -@turn_speed  
       @found_enemy=time
@@ -55,8 +60,10 @@ class DavidDuck
     elsif (time-@found_enemy>30 )
       say(['no enemy ',time].join)
       @gun_turn_speed = @FAST_GUN_TURN
-      @turn_speed = 0 unless @near_wall
-      @turn_speed = rand(1..5)  unless time%5 == 0  
+      if(!@near_wall)
+        @turn_speed = 0 
+        @turn_speed = rand(1..4)  unless time%5 == 0  
+      end
     end 
    end
    
@@ -64,7 +71,7 @@ class DavidDuck
     @last_hit = time unless events['got_hit'].empty? 
     if @last_hit && time - @last_hit < 5
       say('hit')
-      @turn_speed = @FAST_TURN      
+      @turn_speed = @FAST_TURN-2      
     elsif @last_hit && (time - @last_hit < 20)
       say('not hit')
       @turn_speed = rand(1...@NORMAL_TURN)      
@@ -72,28 +79,30 @@ class DavidDuck
    end 
 
    def detect_walls
-    if x<=65
+    if x<=85
       turn_speed =  @FAST_TURN
       say('left edge')
-          @near_wall=true;
-    elsif x>=(battlefield_width-65)
+      @near_wall=true;
+    elsif x>=(battlefield_width-85)
       turn_speed =  @FAST_TURN 
       say('right edge')
           @near_wall=true;
-    elsif y>= (battlefield_height-65)
+    elsif y>= (battlefield_height-85)
       turn_speed =  @FAST_TURN
       say('bottom edge')
           @near_wall=true;
-    elsif y<=  65 
+    elsif y<= 150 
       turn_speed =  @FAST_TURN
       say('top edge')
       @near_wall=true;
+    else
+      @near_wall=false;
     end
-
    end
    
           
    def implement_update
+     say(@turn_speed.to_s)
       accelerate(@my_accel)
       turn @turn_speed
       turn_gun @gun_turn_speed     
