@@ -194,7 +194,8 @@ class RobotRunner
   end
 
   def hit bullet
-    damage = bullet.energy
+    damage = 0  #default no damage, unless different teams
+    damage = bullet.energy    unless bullet.origin.team != @team      
     @energy -= damage
     @events['got_hit'] << [@energy]
     damage
@@ -307,7 +308,7 @@ class RobotRunner
 
   def scan
     @battlefield.robots.each do |other|
-      if (other != self) && (!other.dead)
+      if (other != self) && (!other.dead) && (other.team !=  @team )
         a = Math.atan2(@y - other.y, other.x - @x) / Math::PI * 180 % 360
         if (@old_radar_heading <= a && a <= @new_radar_heading) || (@old_radar_heading >= a && a >= @new_radar_heading) ||
           (@old_radar_heading <= a+360 && a+360 <= @new_radar_heading) || (@old_radar_heading >= a+360 && a+360 >= new_radar_heading) ||
