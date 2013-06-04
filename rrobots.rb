@@ -117,6 +117,7 @@ class Bullet
     @x, @y, @heading, @origin = x, y, heading, origin
     @speed, @energy = speed, energy
     @battlefield, dead = bf, false
+    origin.shots_fired += 1
   end
 
   def state
@@ -137,6 +138,7 @@ class Bullet
         @battlefield << explosion
         damage = other.hit(self)
         origin.damage_given += damage
+        origin.shots_hit += 1
         origin.kills += 1 if other.dead
         @dead = true
       end
@@ -215,6 +217,9 @@ def print_outcome(battlefield)
   puts "robots :"
   battlefield.robots.each do |robot|
     puts "  #{robot.name}:"
+    puts "    shots_fired: #{'%.1f' % robot.shots_fired}"
+    puts "    shots_hit: #{'%.1f' % robot.shots_hit}"
+    puts "    accuracy: #{'%.1f' % (100*robot.shots_hit/robot.shots_fired)} %"
     puts "    damage_given: #{'%.1f' % robot.damage_given}"
     puts "    damage_taken: #{'%.1f' % (100 - robot.energy)}"
     puts "    kills:        #{robot.kills}"

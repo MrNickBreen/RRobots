@@ -48,6 +48,31 @@ class Match
   def timedout?
     @timedout == 1
   end
+
+  
+  def winner_shots_fired
+    @bots[winner]['shots_fired'].to_i
+  end
+
+  def loser_shots_fired
+    @bots[loser]['shots_fired'].to_i
+  end
+  
+  def winner_shots_hit
+    @bots[winner]['shots_hit'].to_i
+  end
+
+  def loser_shots_hit
+    @bots[loser]['shots_hit'].to_i
+  end
+  
+  def winner_accuracy
+    100* @bots[winner]['shots_hit'].to_i/@bots[winner]['shots_fired'].to_i
+  end
+
+  def loser_accuracy
+    100* @bots[loser]['shots_hit'].to_i/@bots[loser]['shots_fired'].to_i
+  end
   
   #between 100 and 0
   def winner_health 
@@ -61,7 +86,7 @@ class Match
   
   def one_line_summary
     if !tie?
-      line = "#{winner} beats #{loser} by #{'%.1f' % margin} energy in #{@ticks} ticks"
+      line = "#{winner} beats #{loser} by #{'%.1f' % margin} energy in #{@ticks} ticks. #{winner} accuracy #{'%.1f'% winner_accuracy} vs. #{loser} accuracy #{'%.1f'% loser_accuracy}"
       if @timedout then line += " (match timed out, so #{winner} gets #{winner_points}, loser gets #{loser_points})" end
     else
       line = "#{winner} ties #{loser} at #{'%.1f' % winner_health} energy in #{@ticks} ticks"
@@ -85,7 +110,7 @@ class Round
     @bots = Hash.new {|h,key| h[key] = {}}
     
     both_bots =  [@bots[@matches[0].winner], @bots[@matches[0].loser]]
-    stats_to_init = ['wins', 'points', 'ties', 'margin', 'simul', 'timedout', 'round_wins']
+    stats_to_init = ['wins', 'points', 'ties', 'margin', 'simul', 'timedout', 'round_wins','accuracy', 'shots_fired', 'shots_hit']
     stats_to_init.each {|stat| both_bots.each {|b| b[stat] = 0 }}
     
     @matches.each do |match|
@@ -95,6 +120,15 @@ class Round
       both_bots.each {|b| b['timedout'] += 1 if match.timedout?}
       both_bots.each {|b| b['simul'] += 1 if match.simul?}
       @bots[match.winner]['margin'] += match.margin
+      
+      @bots[match.winner]['shots_fired'] += match.winner_shots_fired
+      @bots[match.loser]['shots_fired'] += match.loser_shots_fired
+      @bots[match.winner]['shots_hit'] += match.winner_shots_hit
+      @bots[match.loser]['shots_hit'] += match.loser_shots_hit
+      
+      @bots[match.winner]['accuracy'] = 100*@bots[match.winner]['shots_hit'] / @bots[match.winner]['shots_fired']
+      @bots[match.loser]['accuracy'] = 100*@bots[match.loser]['shots_hit'] / @bots[match.loser]['shots_fired']
+      
       if match.tie?
         both_bots.each {|b| b['wins'] += 0.5}
       else
@@ -269,7 +303,7 @@ def to_html match_data, html
 	  rounds << r
 	end
 	
-	stats = ['wins', 'points','round_wins', 'margin', 'simul', 'timedout', 'ties']
+	stats = ['wins', 'points','round_wins', 'margin', 'simul', 'timedout', 'ties', 'shots_fired','accuracy']
 	rankings = {}
 	stats.each{|stat| rankings[stat] = rank_by_round_stat(stat, rounds)}
 	

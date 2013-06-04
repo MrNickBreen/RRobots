@@ -140,6 +140,12 @@ class RobotRunner
   #keeps track of total damage done by this robot
   attr_accessor :damage_given
 
+  #keeps track of total shots hit by this robot
+  attr_accessor :shots_hit
+
+  #keeps track of total shots fired by this robot
+  attr_accessor :shots_fired
+
   #keeps track of the kills
   attr_accessor :kills
 
@@ -169,6 +175,8 @@ class RobotRunner
     @speed = 0
     @energy = 100
     @damage_given = 0
+    @shots_hit = 0
+    @shots_fired = 0
     @kills = 0
     teleport
   end
@@ -195,7 +203,7 @@ class RobotRunner
 
   def hit bullet
     damage = 0  #default no damage, unless different teams
-    damage = bullet.energy    unless bullet.origin.team != @team      
+    damage = bullet.energy    unless bullet.origin.team == @team      
     @energy -= damage
     @events['got_hit'] << [@energy]
     damage
