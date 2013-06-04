@@ -5,41 +5,34 @@ class DavidDuck
    include Robot
    
    def initialize
-     @NORMAL_TURN = 2
-     @FAST_TURN = 9
+     @NORMAL_TURN = 1
+     @FAST_TURN = 4
      
-     @WALL_PADDING=100
+     @WALL_PADDING=120
      
      @SLOW_GUN_TURN = 1
      @NORMAL_GUN_TURN = 5
-     @FAST_GUN_TURN = 10 
+     @FAST_GUN_TURN = 17 
      
   	 @my_accel = 1
   	 @gun_turn_speed = 10
   	 @near_wall = false
   	 @turn_speed = 3
   	 @found_enemy = 0  #the time at which our scanner last saw an enemy
+  	 @distance_to_enemy = 0 # distance to enemy we scanned
    end
 
    
   # main game loop
   def tick events
     setup_bot	
-        
-    if(!@near_wall)
-      @turn_speed = rand(1..4)  if time%30 == 0  
-    end        
-        
-  	detect_injury		  	
+            
+  	#detect_injury		
+  	@turn_speed = @NORMAL_TURN unless time % 12==0     	
 
   	detect_walls
   	
     detect_enemy
-    
-    if @near_wall
-       say(@near_wall.to_s)
-       turn_speed =  @FAST_TURN
-    end
         
     implement_update        
     
@@ -48,7 +41,7 @@ class DavidDuck
     
    # Helper methods       
    def setup_bot          
-    turn_radar 1 if time == 0
+    turn_radar -3 if time == 0
     turn_gun 20 if time < 3
    end
    
@@ -59,17 +52,28 @@ class DavidDuck
       fire 3 
       @gun_turn_speed = -@turn_speed  
       @found_enemy=time
-      # @turn_speed = 3
-      # turn_radar -1      
+      @distance_to_enemy = events['robot_scanned'][0][0]
+      update_radar
+      #say(@distance_to_enemy)      
     end    
-    if (time-@found_enemy>0 && time-@found_enemy<4)
-      @gun_turn_speed = -@turn_speed-5  
-    elsif (time-@found_enemy>3 && time-@found_enemy<20 )
+    if (time-@found_enemy>0 && time-@found_enemy<3)
+      @gun_turn_speed = -@turn_speed-@NORMAL_GUN_TURN-5 
+    elsif (time-@found_enemy>3 && time-@found_enemy<15 and @distance_to_enemy>100)
       @gun_turn_speed = @SLOW_GUN_TURN
+    elsif (time-@found_enemy<20 )
+      @gun_turn_speed = @NORMAL_GUN_TURN
     elsif (time-@found_enemy>20 )
       say(['no enemy ',time].join)
       @gun_turn_speed = @FAST_GUN_TURN
     end 
+   end
+   
+   def update_radar
+     if(@distance_to_enemy>100 and (radar_heading > -6+gun_heading))
+       turn_radar -2
+     elsif (radar_heading < -2+gun_heading)
+      turn_radar 2
+     end
    end
    
    def detect_injury   
@@ -84,20 +88,12 @@ class DavidDuck
    end 
 
    def detect_walls
-    if x<=@WALL_PADDING
-      turn_speed =  @FAST_TURN
-      say('left edge')
-      @near_wall=true;
-    elsif x>=(battlefield_width-@WALL_PADDING)
-      turn_speed =  @FAST_TURN 
-      say('right edge')
+    if x<=@WALL_PADDING or x>=(battlefield_width-@WALL_PADDING)
+      @turn_speed =  @FAST_TURN 
+      say('side edge')
           @near_wall=true;
-    elsif y>= (battlefield_height-@WALL_PADDING)
-      turn_speed =  @FAST_TURN
-      say('bottom edge')
-          @near_wall=true;
-    elsif y<= @WALL_PADDING 
-      turn_speed =  @FAST_TURN
+    elsif y>= (battlefield_height-@WALL_PADDING) or y<= @WALL_PADDING 
+      @turn_speed =  @FAST_TURN
       say('top edge')
       @near_wall=true;
     else
@@ -107,8 +103,8 @@ class DavidDuck
    
           
    def implement_update
-      accelerate(1) #@my_accel)
       turn @turn_speed
+      accelerate( @my_accel ) 
       turn_gun @gun_turn_speed     
    end
    
