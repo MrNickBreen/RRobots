@@ -10,7 +10,11 @@ include Robot
 
 def tick events
 turn_radar 1 if time == 0
+
+
 turn_gun 10
+
+
 if (time % 100 < 50)
 turn_speed = 2
 say('woo')
@@ -26,11 +30,12 @@ if events['robot_scanned'].empty?
 turn turn_speed
 turn_gun 5
 else
-#turn  -turn_speed
+fire 3
+turn_gun  -10
 end
 accelerate 3
 
-fire 3 unless events['robot_scanned'].empty?
+#fire 3 unless events['robot_scanned'].empty?
 
 end
 end
