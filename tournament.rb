@@ -1,10 +1,10 @@
-require "YAML"
-
+#require "YAML"
+require "yaml"
 class Match
   attr_reader :bots
   attr_reader :seed
   attr_reader :match
-  
+
   def initialize(data)
     @bots = data['robots']
     @seed = data['seed']
@@ -12,7 +12,7 @@ class Match
     @timedout = data['timedout']
     @match = data['match']
   end
-  
+
   def winner
     sorted = @bots.sort{|a,b| a[1]['damage_given'] <=> b[1]['damage_given']}
     return sorted[1][0]
@@ -22,34 +22,34 @@ class Match
     sorted = @bots.sort{|a,b| a[1]['damage_given'] <=> b[1]['damage_given']}
     return sorted[0][0]
   end
-  
+
   def tie?
-    return margin == 0.0 
+    return margin == 0.0
   end
-  
+
   def margin
     @bots[winner]['damage_given'] - @bots[loser]['damage_given']
   end
-  
+
   def winner_points
     return 0.5 if simul?
     return winner_health / (winner_health + loser_health)
   end
-  
+
   def loser_points
     return 0.5 if simul?
     return loser_health / (winner_health + loser_health)
   end
-  
+
   def simul?
     winner_health + loser_health == 0
   end
-  
+
   def timedout?
     @timedout == 1
   end
 
-  
+
   def winner_shots_fired
     @bots[winner]['shots_fired'].to_i
   end
@@ -57,7 +57,7 @@ class Match
   def loser_shots_fired
     @bots[loser]['shots_fired'].to_i
   end
-  
+
   def winner_shots_hit
     @bots[winner]['shots_hit'].to_i
   end
@@ -65,25 +65,25 @@ class Match
   def loser_shots_hit
     @bots[loser]['shots_hit'].to_i
   end
-  
+
   def winner_accuracy
-    100* @bots[winner]['shots_hit'].to_i/@bots[winner]['shots_fired'].to_i
+    100* @bots[winner]['shots_hit'].to_i/[@bots[winner]['shots_fired'].to_i, 1].max
   end
 
   def loser_accuracy
-    100* @bots[loser]['shots_hit'].to_i/@bots[loser]['shots_fired'].to_i
+    100* @bots[loser]['shots_hit'].to_i/[@bots[loser]['shots_fired'].to_i, 1].max
   end
-  
+
   #between 100 and 0
-  def winner_health 
+  def winner_health
     [100 - @bots[winner]['damage_taken'], 0].max
   end
-  
+
   #between 100 and 0
-  def loser_health 
+  def loser_health
     [100 - @bots[loser]['damage_taken'], 0].max
   end
-  
+
   def one_line_summary
     if !tie?
       line = "#{winner} beats #{loser} by #{'%.1f' % margin} energy in #{@ticks} ticks. #{winner} accuracy #{'%.1f'% winner_accuracy} vs. #{loser} accuracy #{'%.1f'% loser_accuracy}"
@@ -103,16 +103,16 @@ class Round
   attr_accessor :winner
   #attr_accessor :total_margin
   attr_reader :bots
-  
+
   # matches should be an array of Matches
   def initialize (matches)
     @matches = matches
     @bots = Hash.new {|h,key| h[key] = {}}
-    
+
     both_bots =  [@bots[@matches[0].winner], @bots[@matches[0].loser]]
     stats_to_init = ['wins', 'points', 'ties', 'margin', 'simul', 'timedout', 'round_wins','accuracy', 'shots_fired', 'shots_hit']
     stats_to_init.each {|stat| both_bots.each {|b| b[stat] = 0 }}
-    
+
     @matches.each do |match|
       @bots[match.winner]['points'] += match.winner_points
       @bots[match.loser]['points'] += match.loser_points
@@ -120,15 +120,15 @@ class Round
       both_bots.each {|b| b['timedout'] += 1 if match.timedout?}
       both_bots.each {|b| b['simul'] += 1 if match.simul?}
       @bots[match.winner]['margin'] += match.margin
-      
+
       @bots[match.winner]['shots_fired'] += match.winner_shots_fired
       @bots[match.loser]['shots_fired'] += match.loser_shots_fired
       @bots[match.winner]['shots_hit'] += match.winner_shots_hit
       @bots[match.loser]['shots_hit'] += match.loser_shots_hit
-      
+
       @bots[match.winner]['accuracy'] = 100*@bots[match.winner]['shots_hit'] / @bots[match.winner]['shots_fired']
       @bots[match.loser]['accuracy'] = 100*@bots[match.loser]['shots_hit'] / @bots[match.loser]['shots_fired']
-      
+
       if match.tie?
         both_bots.each {|b| b['wins'] += 0.5}
       else
@@ -139,22 +139,22 @@ class Round
       if both_bots[1]['wins'] == both_bots[0]['wins'] then both_bots[0]['round_wins'] = 0.5 ;both_bots[1]['round_wins'] = 0.5 end
     end
   end
-  
+
   def winner
     sorted = @bots.sort{|a,b| a[1]['wins'] <=> b[1]['wins']}
     return sorted[1][0]
   end
-  
+
   def loser
     sorted = @bots.sort{|a,b| a[1]['wins'] <=> b[1]['wins']}
     return sorted[0][0]
   end
-  
+
   def tie?
     @bots[winner]['wins'] == @bots[loser]['wins']
   end
   #calc how many points for losing bot
-  
+
   def one_line_summary
     if !tie?
       line = "#{winner} conquers #{loser} (#{@bots[winner]['wins']} to #{@bots[loser]['wins']} )"
@@ -165,7 +165,7 @@ class Round
 end
 
 def print_header(html)
-  header = '''  
+  header = '''
   <html>
   <head> <title>RRobots Tournament Results </title>
   <style type="text/css">
@@ -183,9 +183,9 @@ def print_header(html)
       padding:4px;
     }
     td.sum {font-weight:bold;}
-    td.blank {background-color:white}	
+    td.blank {background-color:white}
   -->
-  </style>	
+  </style>
   </head>
   <body>
   '''
@@ -211,7 +211,7 @@ def rank_by_round_stat(stat, rounds)
 end
 
 # print a html page with a table containing once cell per round
-# include  stat in that cell.  if r is the round in question 
+# include  stat in that cell.  if r is the round in question
 # then r.bots[current_bot][stat] had better exist!
 def print_round_table(stat, rounds, ranking, round_tables, html)
   #ranking is an array of 2 element arrays - we just want the first element in the 'sub' array,
@@ -237,7 +237,7 @@ def print_round_table(stat, rounds, ranking, round_tables, html)
         if round == nil then puts "couldn't find round bewtween #{row} and #{col}" end
         html.puts "    <td> #{ '%.1f'% round.bots[row][stat] } </td>"
         row_total += round.bots[row][stat]
-      else  
+      else
         html.puts"    <td> --- </td>"
       end
     end
@@ -251,23 +251,23 @@ def print_index(round_tables, rankings, stats, html)
   html.puts"<a name='top'></a>"
   html.puts "<h1> Round Summary Tables </h1>"
   html.puts "<ul>"
-  
+
   round_tables.each { |t| html.puts "<li><a href='##{t}'>#{t}</a></li>"  }
-  
+
   html.puts "</ul>"
   html.puts "<h1> Rankings</h1>"
   html.puts "<table><tr>"
-  
+
   stats.each do |stat|
     html.puts "<td>#{stat}<table>"
     list = rankings[stat]
     list.each {|row| html.puts "<tr><td>#{row[0]}</td> <td> #{'%.1f'%row[1]}</td></tr>"}
-    
+
     html.puts "</table></td>"
   end
-  
+
   html.puts "</tr></table>"
-  
+
   html.puts <<ENDHTML
   <h1>Definitions:</h1>
     <ul>
@@ -285,10 +285,10 @@ end
 
 def to_html match_data, html
 	print_header(html)
-	
+
 	round_matches = Hash.new {|h,k| h[k] = []}
 	robots = []
-	
+
 	match_data.each do |m|
 	  match = Match.new(m)
 	  round_matches[m['round']] << match
@@ -296,17 +296,17 @@ def to_html match_data, html
 	  robots << match.loser
 	end
 	robots = robots.uniq
-	
+
 	rounds = []
 	round_matches.values.each do |matches|
 	  r = Round.new(matches)
 	  rounds << r
 	end
-	
+
 	stats = ['wins', 'points','round_wins', 'margin', 'simul', 'timedout', 'ties', 'shots_fired','accuracy']
 	rankings = {}
 	stats.each{|stat| rankings[stat] = rank_by_round_stat(stat, rounds)}
-	
+
 	print_index(stats, rankings, stats, html) #pass stats array in insted of using rankings.keys so we can preserve order
 	stats.each {|stat|  print_round_table(stat, rounds, rankings[stat],stats, html) }
 	print_footer(html)
@@ -319,9 +319,9 @@ end
 
 def usage
   puts "Usage: ruby tournament.rb [-timeout=<N>] [-matches=<N>] (-dir=<Directory> | <RobotClassName[.rb]>+)"
-  puts "\t[-timeout=<N>] (optional, default 10000) number of ticks a match will last at most."  
-  puts "\t[-matches=<N>] (optional, default 2) how many times each robot fights every other robot."  
-  puts "\t-dir=<Directory> All .rb files from that directory will be matched against each other."  
+  puts "\t[-timeout=<N>] (optional, default 10000) number of ticks a match will last at most."
+  puts "\t[-matches=<N>] (optional, default 2) how many times each robot fights every other robot."
+  puts "\t-dir=<Directory> All .rb files from that directory will be matched against each other."
   puts "\tthe names of the rb files have to match the class names of the robots."
   exit(0)
 end
@@ -375,7 +375,7 @@ round_number = 0
 opponents = robots.clone
 @all_match_data = []
 robots.each do |bot1|
-	
+
   opponents.delete bot1
   opponents.each do |bot2|
     round_number += 1
@@ -386,7 +386,7 @@ robots.each do |bot1|
     matches_per_round.times do |i|
       puts "- Match #{i+1} of #{matches_per_round} -"
       cmd = "ruby rrobots.rb -nogui -timeout=#{timeout} #{folder}/#{bot1} #{folder}/#{bot2}"
-      
+
       # using popen instead of `cmd` lets us see the progress dots (......) output as the match progresses.
       sub = IO.popen(cmd)
       results_string = sub.read
@@ -397,7 +397,7 @@ robots.each do |bot1|
       match_data['round'] = round_number
       match_data['timedout'] = 1 if timeout <= match_data['elapsed_ticks']
       @all_match_data << match_data
-      
+
       match = Match.new(match_data)
       puts
       puts match.one_line_summary
