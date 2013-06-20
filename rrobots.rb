@@ -219,7 +219,7 @@ def print_outcome(battlefield)
     puts "  #{robot.name}:"
     puts "    shots_fired: #{'%.1f' % robot.shots_fired}"
     puts "    shots_hit: #{'%.1f' % robot.shots_hit}"
-    puts "    accuracy: #{'%.1f' % (100*robot.shots_hit/robot.shots_fired)} %"
+    puts "    accuracy: #{'%.1f' % (100*robot.shots_hit/[robot.shots_fired,1].max)} %"
     puts "    damage_given: #{'%.1f' % robot.damage_given}"
     puts "    damage_taken: #{'%.1f' % (100 - robot.energy)}"
     puts "    kills:        #{robot.kills}"
