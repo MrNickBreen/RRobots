@@ -1,13 +1,12 @@
 require 'robot'
 #notes for future updates:
-# - get the corner and side detection working properly
 # - instead of turning the duck to find enemy, turn the gun (which turns radar)
 # - do evasive action when get hit (health changes between turns)
 class NickDuck
    include Robot
    def initialize
-    # TODO: add all variables here
-   end
+
+  end
    def detectEnemy
     unless events['robot_scanned'].empty?
       @seen_enemy_recently = true
