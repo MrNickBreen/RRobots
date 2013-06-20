@@ -1,6 +1,11 @@
 require 'robot'
 
 class DavidDuck  
+
+
+   #TODO: remove magic numbers.
+   #TODO: rename detect methods
+   
   
    include Robot
    
@@ -8,7 +13,7 @@ class DavidDuck
      @NORMAL_TURN = 1
      @FAST_TURN = 4
      
-     @WALL_PADDING=120
+     @WALL_PADDING = 120
      
      @SLOW_GUN_TURN = 1
      @NORMAL_GUN_TURN = 5
@@ -27,8 +32,9 @@ class DavidDuck
   def tick events
     setup_bot	
             
-  	#detect_injury		
-  	@turn_speed = @NORMAL_TURN unless time % 12==0     	
+  	#detect_injury	
+  		
+  	@turn_speed = @NORMAL_TURN unless time % 12 == 0     	
 
   	detect_walls
   	
@@ -42,7 +48,6 @@ class DavidDuck
    # Helper methods       
    def setup_bot          
     turn_radar -3 if time == 0
-    turn_gun 20 if time < 3
    end
    
 
@@ -53,16 +58,15 @@ class DavidDuck
       @gun_turn_speed = -@turn_speed  
       @found_enemy=time
       @distance_to_enemy = events['robot_scanned'][0][0]
-      update_radar
-      #say(@distance_to_enemy)      
+      update_radar      
     end    
-    if (time-@found_enemy>0 && time-@found_enemy<3)
-      @gun_turn_speed = -@turn_speed-@NORMAL_GUN_TURN-5 
-    elsif (time-@found_enemy>3 && time-@found_enemy<15 and @distance_to_enemy>100)
+    if (time-@found_enemy > 0 && time - @found_enemy < 3)
+      @gun_turn_speed = - @turn_speed - @NORMAL_GUN_TURN - 5 
+    elsif (time-@found_enemy > 3 && time - @found_enemy < 15 and @distance_to_enemy > 100)
       @gun_turn_speed = @SLOW_GUN_TURN
-    elsif (time-@found_enemy<20 )
+    elsif (time-@found_enemy < 20 )
       @gun_turn_speed = @NORMAL_GUN_TURN
-    elsif (time-@found_enemy>20 )
+    elsif (time-@found_enemy > 20 )
       say(['no enemy ',time].join)
       @gun_turn_speed = @FAST_GUN_TURN
     end 
@@ -78,10 +82,10 @@ class DavidDuck
    
    def detect_injury   
     @last_hit = time unless events['got_hit'].empty? 
-    if @last_hit && time - @last_hit < 4
+    if @last_hit and time - @last_hit < 4
       say('hit')
       @turn_speed = @FAST_TURN      
-    elsif @last_hit && (time - @last_hit < 10)
+    elsif @last_hit and (time - @last_hit < 10)
       say('not hit')
       @turn_speed = rand(1...@NORMAL_TURN)      
     end    
@@ -101,7 +105,6 @@ class DavidDuck
     end
    end
    
-          
    def implement_update
       turn @turn_speed
       accelerate( @my_accel ) 
