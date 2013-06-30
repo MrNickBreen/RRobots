@@ -55,7 +55,7 @@ By including Robot you get all this methods to controll your bot:
                       #may take 8 ticks to stop (and you have to call it every tick)
   fire(power)         #fires a bullet in the direction of your gun, 
                       #power is 0.1 - 3, this power will heat your gun
-  turn(degrees)       #turns the robot (and the gun and the radar), 
+  turn(degrees)       #turns the robot conter-clockwise (and the gun and the radar), 
                       #max 10 degrees per tick
   turn_gun(degrees)   #turns the gun (and the radar), max 30 degrees per tick
   turn_radar(degrees) #turns the radar, max 60 degrees per tick
