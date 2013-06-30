@@ -2,7 +2,7 @@ require 'robot'
 #notes for future updates:
 # - instead of turning the duck to find enemy, turn the gun (which turns radar)
 # - do evasive action when get hit (health changes between turns)
-class NickDuck
+class NickNack
    include Robot
    def initialize
 
